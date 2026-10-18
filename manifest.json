@@ -1,0 +1,23 @@
+{
+  "manifest_version": 3,
+  "name": "Netflix Hold to Speed",
+  "version": "1.0.0",
+  "description": "Hold left click on the Netflix player or hold Space to speed up playback.",
+  "permissions": [
+    "storage"
+  ],
+  "action": {
+    "default_popup": "popup.html"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://www.netflix.com/*"
+      ],
+      "js": [
+        "content.js"
+      ],
+      "run_at": "document_start"
+    }
+  ]
+}

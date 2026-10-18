@@ -1,0 +1,147 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <style>
+      :root {
+        --bg: #141414;
+        --card: #1f1f1f;
+        --line: #3a3a3a;
+        --text: #f5f5f5;
+        --muted: #9a9a9a;
+        --accent: #e50914;
+        --thumb: 18px;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        width: 320px;
+        padding: 16px;
+        background: var(--bg);
+        color: var(--text);
+        font: 13px/1.4 system-ui, -apple-system, "Segoe UI", sans-serif;
+      }
+      header { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+      .logo {
+        display: grid; place-items: center;
+        width: 30px; height: 30px; border-radius: 8px;
+        background: var(--accent); font-size: 14px; font-weight: 700;
+      }
+      h1 { margin: 0; font-size: 15px; font-weight: 600; }
+      h1 small { display: block; color: var(--muted); font-weight: 400; font-size: 11px; }
+
+      .card { background: var(--card); border-radius: 12px; padding: 14px; margin-bottom: 10px; }
+      .row { display: flex; justify-content: space-between; align-items: baseline; }
+      .label { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .06em; }
+      .big { font-size: 28px; font-weight: 700; font-variant-numeric: tabular-nums; }
+      .mid { font-size: 15px; font-weight: 600; font-variant-numeric: tabular-nums; }
+
+      /* Dotted speed track: line + one dot per preset, native range input on top for drag/keyboard. */
+      .slider { position: relative; height: 28px; margin: 10px 0 2px; }
+      .slider::before, .slider .fill {
+        content: ""; position: absolute; top: 50%; height: 2px; transform: translateY(-50%);
+        left: calc(var(--thumb) / 2);
+      }
+      .slider::before { right: calc(var(--thumb) / 2); background: var(--line); }
+      .slider .fill { width: calc((100% - var(--thumb)) * var(--p, 0)); background: var(--accent); }
+      .dots, .labels {
+        position: absolute; inset: 0; display: flex; justify-content: space-between;
+        padding: 0 calc(var(--thumb) / 2); pointer-events: none;
+      }
+      .dots span { width: 0; display: flex; align-items: center; justify-content: center; }
+      .dots span::after {
+        content: ""; flex: none; width: 8px; height: 8px; border-radius: 50%; background: var(--line);
+      }
+      .dots span.on::after { background: var(--accent); }
+      .labels { position: static; height: 16px; }
+      .labels button {
+        width: 0; display: flex; justify-content: center; white-space: nowrap; pointer-events: auto;
+        background: none; border: 0; padding: 0; color: var(--muted); font: inherit; font-size: 11px; cursor: pointer;
+      }
+      .labels button.sel { color: var(--text); font-weight: 600; }
+
+      input[type="range"] {
+        -webkit-appearance: none; appearance: none; position: absolute; inset: 0;
+        width: 100%; margin: 0; background: transparent; cursor: pointer;
+      }
+      input[type="range"]::-webkit-slider-thumb {
+        -webkit-appearance: none; width: var(--thumb); height: var(--thumb); border-radius: 50%;
+        background: var(--text); border: 4px solid var(--accent); box-shadow: 0 0 0 4px rgba(229, 9, 20, .25);
+        transition: transform .12s;
+      }
+      input[type="range"]:active::-webkit-slider-thumb { transform: scale(1.15); }
+      input[type="range"]:focus-visible { outline: none; }
+      input[type="range"]:focus-visible::-webkit-slider-thumb { box-shadow: 0 0 0 4px rgba(255, 255, 255, .5); }
+      /* Custom value that isn't a preset: hollow thumb so it's clear no stop is selected. */
+      .is-custom input[type="range"]::-webkit-slider-thumb { background: var(--card); border-color: var(--muted); box-shadow: none; }
+      .is-custom .fill { background: var(--muted); }
+
+      .custom { display: flex; align-items: center; justify-content: space-between; margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--line); }
+      .num { display: flex; align-items: center; background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 0 10px; }
+      .num:focus-within { border-color: var(--accent); }
+      .num input {
+        width: 56px; padding: 7px 0; background: none; border: 0; outline: none;
+        color: var(--text); font: inherit; font-weight: 600; text-align: right;
+      }
+      .num span { color: var(--muted); padding-left: 4px; }
+
+      details summary {
+        list-style: none; cursor: pointer; display: flex; justify-content: space-between; align-items: center;
+        color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .06em;
+      }
+      details summary::-webkit-details-marker { display: none; }
+      details summary::after { content: "›"; font-size: 18px; line-height: 1; transition: transform .2s; }
+      details[open] summary::after { transform: rotate(90deg); }
+      details[open] summary { margin-bottom: 12px; }
+      .plain { position: relative; height: 24px; margin-top: 6px; }
+      .hint { margin: 8px 0 0; color: var(--muted); font-size: 11px; }
+
+      footer { color: var(--muted); font-size: 11px; text-align: center; margin-top: 4px; }
+      kbd {
+        display: inline-block; padding: 1px 6px; border: 1px solid var(--line); border-bottom-width: 2px;
+        border-radius: 4px; color: var(--text); font: inherit; font-size: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div class="logo">»</div>
+      <h1>Hold to Speed<small>for Netflix</small></h1>
+    </header>
+
+    <section class="card" id="speedCard">
+      <div class="row">
+        <span class="label">Speed</span>
+        <span class="big" id="speedOut">2×</span>
+      </div>
+      <div class="slider">
+        <div class="fill"></div>
+        <div class="dots" id="dots"></div>
+        <input id="speed" type="range" min="0" step="1" aria-label="Speed preset" />
+      </div>
+      <div class="labels" id="labels"></div>
+      <div class="custom">
+        <label for="custom" class="label">Custom</label>
+        <div class="num">
+          <input id="custom" type="number" min="0.25" max="16" step="0.05" />
+          <span>×</span>
+        </div>
+      </div>
+    </section>
+
+    <details class="card">
+      <summary>Advanced</summary>
+      <div class="row">
+        <span class="label">Hold delay</span>
+        <span class="mid" id="delayOut">200 ms</span>
+      </div>
+      <div class="slider plain">
+        <div class="fill"></div>
+        <input id="delay" type="range" min="50" max="1000" step="25" aria-label="Hold delay in milliseconds" />
+      </div>
+      <p class="hint">How long to hold before speed-up starts. Anything shorter still plays/pauses.</p>    </details>
+
+    <footer>Hold <kbd>Space</kbd> or <kbd>Left click</kbd> on the player</footer>
+    <script src="popup.js"></script>
+  </body>
+</html>
