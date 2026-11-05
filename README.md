@@ -3,6 +3,7 @@
 A Chromium extension that temporarily speeds up Netflix while you hold a key or the mouse button — like the hold-to-fast-forward gesture on mobile video apps.
 
 - **Hold Space** or **hold left click** on the player to speed up; release to return to normal speed.
+- While holding, **scroll up/down** to step the speed through the presets; the new speed is saved.
 - A quick tap / click still plays and pauses as usual.
 - Pick the speed from presets (1.25×–4×) or enter a custom value (0.25×–16×).
 - While speeding up, the badge shows when the episode will end at that speed.

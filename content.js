@@ -145,6 +145,28 @@ for (const type of ["pointerup", "mouseup", "click"]) {
   );
 }
 
+// --- Scroll while holding: step through the speed presets ---
+const PRESETS = [1.25, 1.5, 1.75, 2, 2.5, 3, 4]; // ponytail: copy of popup.js PRESETS, keep in sync
+let lastWheel = 0;
+window.addEventListener(
+  "wheel",
+  (e) => {
+    const v = getVideo();
+    if (!active || !v) return;
+    block(e);
+    // ponytail: trackpads fire dozens of wheel events per swipe; one step per 150ms keeps it controllable.
+    if (e.timeStamp - lastWheel < 150) return;
+    lastWheel = e.timeStamp;
+    // Works from custom speeds too: jump to the next preset above/below.
+    const next = e.deltaY < 0 ? PRESETS.find((p) => p > multiplier) : PRESETS.findLast((p) => p < multiplier);
+    if (!next) return;
+    multiplier = v.playbackRate = next;
+    showBadge(true);
+    chrome.storage.sync.set({ multiplier: next });
+  },
+  { capture: true, passive: false }
+);
+
 // Releasing outside the window / alt-tabbing must not leave playback stuck fast.
 window.addEventListener("blur", () => {
   keyDown = false;
