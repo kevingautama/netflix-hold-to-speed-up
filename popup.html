@@ -96,6 +96,9 @@
       .plain { position: relative; height: 24px; margin-top: 6px; }
       .hint { margin: 8px 0 0; color: var(--muted); font-size: 11px; }
 
+      .toggle { display: flex; justify-content: space-between; align-items: center; gap: 12px; cursor: pointer; }
+      .toggle input { accent-color: var(--accent); width: 16px; height: 16px; margin: 0; cursor: pointer; }
+
       footer { color: var(--muted); font-size: 11px; text-align: center; margin-top: 4px; }
       kbd {
         display: inline-block; padding: 1px 6px; border: 1px solid var(--line); border-bottom-width: 2px;
@@ -128,6 +131,11 @@
         </div>
       </div>
     </section>
+
+    <label class="card toggle">
+      <span>Auto-skip intro, recap &amp; credits</span>
+      <input id="autoSkip" type="checkbox" />
+    </label>
 
     <details class="card">
       <summary>Advanced</summary>

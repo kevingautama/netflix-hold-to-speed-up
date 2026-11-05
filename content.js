@@ -1,5 +1,5 @@
-const DEFAULTS = { multiplier: 2, delay: 200 };
-let { multiplier, delay } = DEFAULTS;
+const DEFAULTS = { multiplier: 2, delay: 200, autoSkip: true };
+let { multiplier, delay, autoSkip } = DEFAULTS;
 
 let active = null; // which input started the speed-up: "key" | "mouse" | null
 let savedRate = null;
@@ -9,9 +9,10 @@ let mouseTimer = null;
 let suppressClick = false;
 let badge = null;
 
-chrome.storage.sync.get(DEFAULTS, (s) => ({ multiplier, delay } = s));
+chrome.storage.sync.get(DEFAULTS, (s) => ({ multiplier, delay, autoSkip } = s));
 chrome.storage.sync.onChanged.addListener((c) => {
   if (c.delay) delay = c.delay.newValue;
+  if (c.autoSkip) autoSkip = c.autoSkip.newValue;
   if (c.multiplier) {
     multiplier = c.multiplier.newValue;
     const v = getVideo();
@@ -45,7 +46,13 @@ function showBadge(on) {
       "color:#fff;font:600 18px/1 system-ui,sans-serif;letter-spacing:.02em;box-shadow:0 4px 20px rgba(0,0,0,.4)";
   }
   if (!on) return badge.remove();
-  badge.textContent = `${multiplier}× ▸▸`;
+  // Wall-clock end time if playback stays at this speed.
+  const v = getVideo();
+  const left = v ? (v.duration - v.currentTime) / multiplier : NaN;
+  const end = Number.isFinite(left)
+    ? ` · ends ${new Date(Date.now() + left * 1000).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}`
+    : "";
+  badge.textContent = `${multiplier}× ▸▸${end}`;
   // In fullscreen only the fullscreen element's subtree is rendered.
   (document.fullscreenElement || document.body).append(badge);
 }
@@ -146,3 +153,16 @@ window.addEventListener("blur", () => {
   keyTimer = mouseTimer = null;
   stopSpeed();
 });
+
+// --- Auto-skip: Netflix only renders these buttons while skipping is possible ---
+// Matches player-skip-intro / -recap / -preplay and next-episode-seamless-button(-draining) during credits.
+const SKIP = '[data-uia^="player-skip"], [data-uia^="next-episode-seamless-button"]';
+const clicked = new WeakSet();
+new MutationObserver(() => {
+  if (!autoSkip || !location.pathname.startsWith("/watch")) return;
+  const b = document.querySelector(SKIP);
+  if (b && !clicked.has(b)) {
+    clicked.add(b);
+    b.click();
+  }
+}).observe(document.documentElement, { childList: true, subtree: true });

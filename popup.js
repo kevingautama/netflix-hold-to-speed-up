@@ -1,5 +1,5 @@
 const PRESETS = [1.25, 1.5, 1.75, 2, 2.5, 3, 4];
-const DEFAULTS = { multiplier: 2, delay: 200 };
+const DEFAULTS = { multiplier: 2, delay: 200, autoSkip: true };
 const $ = (id) => document.getElementById(id);
 
 const speed = $("speed");
@@ -42,9 +42,11 @@ function setDelay(ms, save) {
 chrome.storage.sync.get(DEFAULTS, (s) => {
   setSpeed(s.multiplier, false);
   setDelay(s.delay, false);
+  $("autoSkip").checked = s.autoSkip;
 });
 
 speed.addEventListener("input", () => setSpeed(PRESETS[speed.value], true));
+$("autoSkip").addEventListener("change", (e) => chrome.storage.sync.set({ autoSkip: e.target.checked }));
 delay.addEventListener("input", () => setDelay(+delay.value, true));
 custom.addEventListener("input", () => {
   const v = Math.round(parseFloat(custom.value) * 100) / 100;
