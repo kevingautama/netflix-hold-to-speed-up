@@ -1,6 +1,6 @@
 # Netflix Hold to Speed
 
-A Chromium extension that temporarily speeds up Netflix while you hold a key or the mouse button — like the hold-to-fast-forward gesture on mobile video apps.
+A Chromium extension that temporarily speeds up Netflix and Disney+ while you hold a key or the mouse button — like the hold-to-fast-forward gesture on mobile video apps.
 
 - **Hold Space** or **hold left click** on the player to speed up; release to return to normal speed.
 - While holding, **scroll up/down** to step the speed through the presets; the new speed is saved.
@@ -19,7 +19,7 @@ A Chromium extension that temporarily speeds up Netflix while you hold a key or 
    - Brave: `brave://extensions`
 3. Turn on **Developer mode**.
 4. Click **Load unpacked** and select the extracted folder (the one containing `manifest.json`).
-5. Open Netflix, start a video, and hold Space or left click.
+5. Open Netflix or Disney+, start a video, and hold Space or left click.
 
 Click the extension icon in the toolbar to change the speed and hold delay.
 

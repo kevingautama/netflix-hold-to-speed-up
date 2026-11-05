@@ -23,8 +23,17 @@ chrome.storage.sync.onChanged.addListener((c) => {
   }
 });
 
-// Netflix is an SPA; only act on the watch page where a <video> exists.
-const getVideo = () => (location.pathname.startsWith("/watch") ? document.querySelector("video") : null);
+// Both sites are SPAs with preview videos on browse pages; only act on the player page.
+// Netflix: /watch/<id>. Disney+: /video/<id> or /play/<id>, optionally behind a locale prefix (/en-gb/play/...).
+const WATCH = location.hostname.endsWith("disneyplus.com") ? /\/(video|play)\// : /^\/watch/;
+const onWatch = () => WATCH.test(location.pathname);
+const getVideo = () => {
+  if (!onWatch()) return null;
+  // Disney+ keeps extra hidden <video>s around; the first one isn't necessarily the one on screen.
+  // ponytail: "playing, else has played" heuristic; key off the visible player container if it picks wrong.
+  const vs = [...document.querySelectorAll("video")];
+  return vs.find((v) => !v.paused) || vs.find((v) => v.currentTime > 0) || vs[0] || null;
+};
 
 // Clicks on player controls (buttons, seek bar) keep their normal behaviour.
 const onVideoArea = (t) =>
@@ -75,7 +84,7 @@ function stopSpeed(src) {
 }
 
 // --- Space: hold = speed, short tap = play/pause ---
-// Capture phase on window so we run before Netflix's own Space handler.
+// Capture phase on window so we run before the player's own Space handler.
 window.addEventListener(
   "keydown",
   (e) => {
@@ -110,7 +119,7 @@ window.addEventListener(
   true
 );
 
-// --- Left click: hold = speed, short click passes through to Netflix untouched ---
+// --- Left click: hold = speed, short click passes through to the player untouched ---
 window.addEventListener(
   "mousedown",
   (e) => {
@@ -125,7 +134,7 @@ window.addEventListener(
   true
 );
 
-// After a hold, swallow the release so Netflix doesn't treat it as a play/pause click.
+// After a hold, swallow the release so the player doesn't treat it as a play/pause click.
 for (const type of ["pointerup", "mouseup", "click"]) {
   window.addEventListener(
     type,
@@ -176,12 +185,16 @@ window.addEventListener("blur", () => {
   stopSpeed();
 });
 
-// --- Auto-skip: Netflix only renders these buttons while skipping is possible ---
-// Matches player-skip-intro / -recap / -preplay and next-episode-seamless-button(-draining) during credits.
-const SKIP = '[data-uia^="player-skip"], [data-uia^="next-episode-seamless-button"]';
+// --- Auto-skip: both players only render these buttons while skipping is possible ---
+// Netflix: player-skip-intro / -recap / -preplay and next-episode-seamless-button(-draining) during credits.
+// Disney+: skip__button (intro/recap/credits) and the up-next play button.
+// ponytail: Disney+ class names are unversioned and change with player redesigns; update here if skipping stops.
+const SKIP =
+  '[data-uia^="player-skip"], [data-uia^="next-episode-seamless-button"], ' +
+  '.skip__button, [data-testid="up-next-play-button"]';
 const clicked = new WeakSet();
 new MutationObserver(() => {
-  if (!autoSkip || !location.pathname.startsWith("/watch")) return;
+  if (!autoSkip || !onWatch()) return;
   const b = document.querySelector(SKIP);
   if (b && !clicked.has(b)) {
     clicked.add(b);

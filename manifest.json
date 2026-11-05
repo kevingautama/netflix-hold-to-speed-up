@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "Netflix Hold to Speed",
+  "name": "Hold to Speed for Netflix & Disney+",
   "version": "1.0.0",
-  "description": "Hold left click on the Netflix player or hold Space to speed up playback.",
+  "description": "Hold left click on the Netflix or Disney+ player or hold Space to speed up playback.",
   "permissions": [
     "storage"
   ],
@@ -12,7 +12,8 @@
   "content_scripts": [
     {
       "matches": [
-        "https://www.netflix.com/*"
+        "https://www.netflix.com/*",
+        "https://www.disneyplus.com/*"
       ],
       "js": [
         "content.js"
